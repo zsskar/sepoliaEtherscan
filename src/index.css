@@ -3,6 +3,8 @@
 /* Import any global styles here */
 @import "./styles/tailwind.css";
 
+
+
 .mb-3\.5 {
   margin-bottom: 0.875rem !important;
 }
@@ -212,3 +214,5 @@ a {
     line-height: 1;
     text-rendering: auto;
 }
+
+

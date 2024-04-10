@@ -133,6 +133,16 @@ export function WeiToEther(wei){
     return formatEther(wei);
 }
 
+export const getBlockDetails = async (blockNumber) => {
+    try {
+      const block = await provider.getBlock(parseInt(blockNumber));
+      return block;
+    } catch (error) {
+        console.log(error);
+      return undefined;
+    }
+  };
+
 
 
 
