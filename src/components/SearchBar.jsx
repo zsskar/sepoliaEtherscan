@@ -1,39 +1,52 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { getBlockDetails } from "../service/etherService";
-
+import 'react-toastify/ReactToastify.css';
+import { toast } from 'react-toastify';
 function SearchBar() {
   const [inputText, setInputText] = useState('');
-  const [block, setBlock] = useState(null);
   const navigate = useNavigate();
 
+  const error = () => {
+    toast.error('No record found !', {
+        position: 'top-center',
+        autoClose: 2000, // 3 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "colored",
+        progress: undefined
+    });
+  }
 
   const handleInputChange = (event) => {
-    setInputText(event.target.value);
+    setInputText(event.target.value.toString().trim());
   };
 
-  const checkForBlock = async (blockNumber) => {
-    const blk =  await getBlockDetails(blockNumber);
-    setBlock(blk);
-  };
-
-  // checkForTxn(address){
-
-  // }
-
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
     switch (inputText.length) {
-      case 7: console.log("Block")
-        checkForBlock(inputText);
-        block !== null ? navigate(`/block/${inputText}`, { state: { myblock: block } }) : alert("Not found !");
-
+      case 7:
+        console.log("Block");
+        try {
+          const res = await getBlockDetails(inputText);
+          if (res != null) {
+            navigate(`/block/${inputText}`, { state: { myblock: res } });
+          } else {
+            error();
+          }
+        } catch (error) {
+          console.error("Error fetching block:", error);
+        }
         break;
-      case 42: console.log("Address");
-        return navigate(`/address/${inputText}`)
-      default: console.log("No Match !");
+      case 42:
+        console.log("Address");
+        return navigate(`/address/${inputText}`);
+      default:
+        error();
     }
-    console.log(inputText);
   };
+
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
@@ -59,6 +72,7 @@ function SearchBar() {
       <button className="px-4 py-2 bg-blue-500 text-white rounded-r-lg" onClick={handleButtonClick}>
         Search
       </button>
+        
     </div>
 
   );

@@ -5,11 +5,94 @@ const provider = new ethers.JsonRpcProvider('https://sepolia.infura.io/v3/253873
 
 export function shortenAddress(address) {
     if (address?.length <= 10) throw new Error("Invalid address length");
+    if (address) {
+        const addressInString = address.toString();
+        const prefix = addressInString.substring(0, 10);
+        const suffix = addressInString.substring(addressInString.length - 10);
 
-    const prefix = address.substring(0, 10);
-    const suffix = address.substring(address.length - 10);
+        return `${prefix}...${suffix}`;
+    }
+}
+export function convertTimestampToFormattedDate(timestamp) {
+    // Convert timestamp to milliseconds
+    var date = new Date(timestamp * 1000);
 
-    return `${prefix}...${suffix}`;
+    // Months array
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Get date components
+    var month = months[date.getMonth()];
+    var day = date.getDate();
+    var year = date.getFullYear();
+    var hours = date.getHours();
+    var minutes = "0" + date.getMinutes();
+    var seconds = "0" + date.getSeconds();
+
+    // Format the time
+    var formattedTime = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+
+    // Get IST offset
+    // var istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5.5
+    // var istTime = new Date(date.getTime() + istOffset);
+
+    // Format the date string
+    var formattedDate = month + '-' + day + '-' + year + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2) + ' ' + formattedTime + ' +UTC';
+
+    return formattedDate;
+}
+
+export function findProposedDetails(block) {
+    if (block) {
+        // Calculate the slot number based on the block's timestamp and slot duration
+        const slotDuration = 12; // Ethereum 2.0 slot duration in seconds
+        const genesisTime = 1606824000;
+        const slot = Math.floor((block.timestamp - genesisTime) / slotDuration);
+
+        // Calculate the epoch based on the slot number
+        const epochLength = 32; // Slots per epoch in Ethereum 2.0
+        const epoch = Math.floor(slot / epochLength);
+
+        // Output proposal details
+        return `Block proposed on slot ${slot}, epoch ${epoch}`;
+    }
+}
+
+export async function getInternalTransactionCount(blockNumber) {
+    // Get the block information with transactions
+    const block = await provider.getBlockWithTransactions(blockNumber);
+    
+    // Filter transactions that are internal (i.e., have a `creates` field)
+    const internalTransactions = block.transactions.filter(tx => tx.creates !== null);
+
+    return internalTransactions.length;
+}
+
+export async function findWithdrawals(blockNumber) {
+    try {
+        const block = await provider.getBlock(blockNumber);
+        const withdrawals = [];
+
+        for (const txHash of block.transactions) {
+            const tx = await provider.getTransaction(txHash);
+            // Check if the transaction sends funds to another account (i.e., it's a withdrawal)
+            if (tx.value.gt(0)) {
+                withdrawals.push({
+                    hash: tx.hash,
+                    from: tx.from,
+                    to: tx.to,
+                    value: ethers.utils.formatEther(tx.value)
+                });
+            }
+            // You may add additional checks for token transfers or interactions with specific contracts
+        }
+
+        return withdrawals;
+    } catch (error) {
+        throw new Error('Error finding withdrawals: ' + error.message);
+    }
 }
 
 export function timeStampToAgoTime(timestamp) {
@@ -40,7 +123,7 @@ export function calculateBlockReward(baseFeePerGas, gasUsed, blockReward) {
         // Convert baseFeePerGas and blockReward to BigInt before calculation
         const baseFeePerGasBigInt = BigInt(baseFeePerGas);
         const blockRewardBigInt = BigInt(blockReward);
-        
+
         // Perform the calculation using integer division
         const totalReward = baseFeePerGasBigInt * BigInt(gasUsed) + blockRewardBigInt;
         const blockRewardBigIntRounded = totalReward / BigInt(gasUsed);
@@ -109,7 +192,7 @@ export const fetchLatestTransactions = async (numberOfBlocks) => {
             const block = await provider.getBlock(blockNumber);
             propertyValue = block.timestamp;
             // Reverse the transactions array to get the latest transactions first
-            let reversedTransactions = block.transactions.reverse();    
+            let reversedTransactions = block.transactions.reverse();
             // Limit transactions to the latest 6 transactions in the block
             transactions.push(...reversedTransactions.slice(0, 6));
         }
@@ -128,20 +211,19 @@ export const fetchLatestTransactions = async (numberOfBlocks) => {
     }
 };
 
-export function WeiToEther(wei){
+export function WeiToEther(wei) {
     // const weiAmount = ethers.BigNumber.from(wei);
     return formatEther(wei);
 }
 
 export const getBlockDetails = async (blockNumber) => {
     try {
-      const block = await provider.getBlock(parseInt(blockNumber));
-      return block;
+        return await provider.getBlock(parseInt(blockNumber));
     } catch (error) {
         console.log(error);
-      return undefined;
+        return undefined;
     }
-  };
+};
 
 
 

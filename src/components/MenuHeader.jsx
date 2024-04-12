@@ -1,21 +1,23 @@
 // import {useState} from 'react'
 
+import { Link } from "react-router-dom";
+
 const MenuHeader = () => {
 //   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
     <div className="bg-white-900 py-4 px-8 flex items-center justify-between" style={{borderBottom: "1px solid #e9ecef !important",zIndex: "1019",boxShadow:"0 15px 10px rgba(130,164,180,.10)"}}>
-      <img style={{width:'150px'}} src='https://sepolia.etherscan.io/assets/svg/logos/logo-etherscan.svg?v=0.0.5' />
+     <Link to='/'><img style={{width:'150px'}} src='https://sepolia.etherscan.io/assets/svg/logos/logo-etherscan.svg?v=0.0.5' /></Link>
       <div className="flex items-center" style={{ marginRight: '5%' }}>
-        <a href="#" className="mr-4 text-black">
+        <Link to='/' className="mr-10 text-black text-lg font-medium">
           Home
-        </a>
-        <a className="mr-4 text-black">
+        </Link>
+        {/* <a className="mr-4 text-black">
         Transaction
         </a>
         <a className="mr-4 text-black">
         View Blocks
-        </a>
+        </a> */}
         {/* <div 
           className="relative group"
           onMouseEnter={() => setIsDropdownOpen(true)}
