@@ -2,7 +2,7 @@ import '../assets/css/theme.min.css';
 import '../assets/css/custom.css';
 import '../assets/css/theme.min.css';
 import '../assets/js/jquery.min.js';
-import { convertTimestampToFormattedDate, findProposedDetails, findWithdrawals, getInternalTransactionCount, timeStampToAgoTime } from '../service/etherService.js';
+import { convertTimestampToFormattedDate, timeStampToAgoTime } from '../service/etherService.js';
 
 function BlockDetails({ block }) {
     console.log(block);
